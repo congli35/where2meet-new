@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+        
+model Event {
+  id                    String         @id @default(cuid())
+  shortCode             String         @unique @db.VarChar(6)
+  title                 String         @db.VarChar(100)
+  purpose               String?        @db.VarChar(20)
+  eventTime             DateTime?
+  specialRequirements   String?        @db.Text
+  status                EventStatus    @default(WAITING)
+  expectedParticipants  Int            @default(5)
+  votingStartedAt       DateTime?
+  votingEndedAt         DateTime?
+  finalLocationId       Int?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  expiresAt             DateTime
+
+  participants          Participant[]
+  recommendations       Recommendation[]
+  votes                 Vote[]
+  finalLocation         Recommendation? @relation("FinalLocation", fields: [finalLocationId], references: [id], onDelete: SetNull)
+
+  @@index([shortCode])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+enum EventStatus {
+  WAITING
+  READY
+  VOTING
+  FINALIZED
+  EXPIRED
+}
+
+model Participant {
+  id          Int      @id @default(autoincrement())
+  eventId     String
+  nickname    String   @db.VarChar(50)
+  address     String   @db.Text
+  isCreator   Boolean  @default(false)
+  joinedAt    DateTime @default(now())
+
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+model Recommendation {
+  id                 Int      @id @default(autoincrement())
+  eventId            String
+  locationName       String?  @db.VarChar(200)
+  locationType       String?  @db.VarChar(50)
+  description        String?  @db.Text
+  fairnessAnalysis   String?  @db.Text
+  suitabilityScore   Decimal? @db.Decimal(3, 2)
+  rank               Int
+  facilities         Json?
+  distances          Json?
+  generatedAt        DateTime @default(now())
+
+  event              Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  votes              Vote[]
+  finalForEvent      Event[]  @relation("FinalLocation")
+
+  @@index([eventId])
+  @@index([generatedAt])
+}
+
+model Vote {
+  id               Int            @id @default(autoincrement())
+  recommendationId Int
+  eventId          String
+  voterNickname    String         @db.VarChar(50)
+  votedAt          DateTime       @default(now())
+
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  event            Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([recommendationId, voterNickname])
+  @@index([eventId])
+  @@index([recommendationId])
+}
