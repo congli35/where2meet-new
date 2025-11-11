@@ -130,18 +130,18 @@ export default function CreateEventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="min-h-screen bg-[linear-gradient(45deg,_#FF7DB4,_#654EA3)] text-white">
+      <div className="container mx-auto max-w-2xl px-4 py-8 text-gray-900">
 
         {/* Header */}
         <div className="flex items-center mb-8">
           <Link href="/">
-            <Button variant="ghost" className="mr-4">
+            <Button variant="ghost" className="mr-4 text-white hover:bg-white/10">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-white">
             Where2Meet
           </h1>
         </div>
@@ -305,7 +305,7 @@ export default function CreateEventPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-6"
+                className="w-full bg-blue-500 hover:bg-blue-700 text-lg py-6"
                 disabled={isLoading}
               >
                 {isLoading ? 'Creating...' : 'Create event and share'}

@@ -4,14 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Users, MapPin, Calendar, Share2, Copy, UserPlus, RefreshCw, Trophy } from "lucide-react"
+import { Users, MapPin, Calendar, Share2, Copy, UserPlus, RefreshCw, Trophy, ChevronDown, Clock, CheckCircle, Target } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Event, Participant, Recommendation, VoteSummary } from '@/types'
 import { localStorageUtils, dateUtils } from '@/lib/utils'
 import { openGoogleMapsRoute } from '@/lib/maps'
 import { JoinEventDialog } from '@/components/JoinEventDialog'
-import { WaitingBanner, ReadyBanner, VotingBanner, FinalizedBanner } from '@/components/StatusBanners'
 import { VotingButton, WinnerBadge } from '@/components/VotingButton'
 
 export default function EventDetailPage() {
@@ -28,6 +27,8 @@ export default function EventDetailPage() {
   const [hasJoined, setHasJoined] = useState(false)
   const [userNickname, setUserNickname] = useState<string | null>(null)
   const [recommendationError, setRecommendationError] = useState<string | null>(null)
+  const [shareUrl, setShareUrl] = useState('')
+  const [isParticipantListOpen, setParticipantListOpen] = useState(false)
   const isCreator = participants.find(p => p.isCreator)?.nickname === userNickname
 
   const fetchVotes = useCallback(async () => {
@@ -100,6 +101,18 @@ export default function EventDetailPage() {
 
     initializeEventData()
   }, [eventId, fetchEventData])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(`${window.location.origin}/event/${eventId}`)
+    }
+  }, [eventId])
+
+  useEffect(() => {
+    if (participants.length > 0 && participants.length <= 4) {
+      setParticipantListOpen(true)
+    }
+  }, [participants.length])
 
   // Poll for status changes and vote updates
   useEffect(() => {
@@ -177,7 +190,8 @@ export default function EventDetailPage() {
   }
 
   const handleCopyLink = async () => {
-    const url = `${window.location.origin}/event/${eventId}`
+    const url = shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/event/${eventId}` : '')
+    if (!url) return
     try {
       await navigator.clipboard.writeText(url)
       toast.success('Link copied!')
@@ -195,10 +209,15 @@ export default function EventDetailPage() {
   }
 
   const handleShare = async () => {
+    const url = shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/event/${eventId}` : '')
+    if (!url) {
+      handleCopyLink()
+      return
+    }
     const shareData = {
       title: event?.title || 'Where2Meet event',
       text: `${event?.title}: find the perfect place for everyone to meet`,
-      url: `${window.location.origin}/event/${eventId}`
+      url
     }
 
     if (navigator.share) {
@@ -271,10 +290,10 @@ export default function EventDetailPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-        </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   if (error) {
     return (
@@ -300,230 +319,346 @@ export default function EventDetailPage() {
     other: '🎯 Something else'
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+  const totalVotes = votes.reduce((sum, v) => sum + v.voteCount, 0)
+  const shareDisplayUrl = shareUrl || `where2meet.com/event/${eventId}`
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/">
-            <Button variant="ghost">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to home
-            </Button>
-          </Link>
-          <div className="flex gap-2">
-            {canJoin && (
-              <Button variant="default" onClick={() => setShowJoinDialog(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Join event
-              </Button>
-            )}
-            {event.status === 'VOTING' && isCreator && votes.length > 0 && (
-              <Button variant="default" onClick={handleFinalizeEvent}>
-                <Trophy className="h-4 w-4 mr-2" />
-                Finalize location
-              </Button>
-            )}
-            {event.status === 'READY' && (
-              <Button variant="outline" onClick={fetchEventData}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
+  const getVoteDataForRecommendation = (recommendationId: number): RecommendationVoteData => {
+    const summary = votes.find(v => v.recommendationId === recommendationId)
+    if (!summary) {
+      return {
+        voteCount: 0,
+        voters: [],
+        hasCurrentUserVoted: false
+      }
+    }
+    return summary
+  }
+
+  const renderStatusSummary = () => {
+    const baseClasses = 'rounded-2xl border px-4 py-3 text-sm shadow-sm'
+    switch (event.status) {
+      case 'WAITING': {
+        const joined = participants.length
+        const target = event.expectedParticipants || 1
+        const remaining = Math.max(target - joined, 0)
+        const percent = Math.min((joined / target) * 100, 100)
+        return (
+          <div className={`${baseClasses} border-yellow-200 bg-yellow-50/80 dark:bg-yellow-900/20`}>
+            <div className="flex items-center gap-2 font-semibold text-yellow-900 dark:text-yellow-100">
+              <Clock className="h-4 w-4" />
+              Waiting for participants
+            </div>
+            <p className="mt-2 text-gray-700 dark:text-gray-200">
+              Joined {joined}/{target}. {remaining > 0 ? `Need ${remaining} more to start.` : 'Everyone is here!'}
+            </p>
+            <div className="mt-3 h-2 rounded-full bg-yellow-100 dark:bg-yellow-800/40">
+              <div className="h-2 rounded-full bg-yellow-500 transition-all" style={{ width: `${percent}%` }} />
+            </div>
           </div>
-        </div>
-
-        {userNickname && (
-          <Card className="mb-8 border border-dashed border-blue-200 dark:border-blue-900/40 bg-white/80 dark:bg-gray-800/70">
-            <CardContent className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Your status</p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{userNickname}</p>
+        )
+      }
+      case 'READY': {
+        if (recommendationError) {
+          return (
+            <div className={`${baseClasses} border-red-200 bg-red-50/80 dark:bg-red-900/20`}>
+              <div className="flex items-center gap-2 font-semibold text-red-800 dark:text-red-100">
+                <Target className="h-4 w-4" />
+                Failed to generate recommendations
               </div>
-              <span className="inline-flex items-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200 px-3 py-1 text-xs font-medium">
-                {isCreator ? 'Organizer' : 'Participant'}
-              </span>
-            </CardContent>
-          </Card>
-        )}
+              <p className="mt-2 text-gray-700 dark:text-gray-200">
+                {recommendationError}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {isCreator && (
+                  <Button size="sm" onClick={handleRetryRecommendations}>
+                    Try again
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={fetchEventData}>
+                  Refresh
+                </Button>
+              </div>
+            </div>
+          )
+        }
+        return (
+          <div className={`${baseClasses} border-blue-200 bg-blue-50/80 dark:bg-blue-900/20`}>
+            <div className="flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              Generating recommendations
+            </div>
+            <p className="mt-2 text-gray-700 dark:text-gray-200">
+              We&apos;re analyzing everyone&apos;s locations to suggest the fairest spots. Hang tight!
+            </p>
+          </div>
+        )
+      }
+      case 'VOTING': {
+        const participantCount = participants.length || 1
+        const percent = Math.min((totalVotes / participantCount) * 100, 100)
+        const allVoted = participantCount > 0 && totalVotes >= participantCount
+        return (
+          <div className={`${baseClasses} border-green-200 bg-green-50/80 dark:bg-green-900/20`}>
+            <div className="flex items-center gap-2 font-semibold text-green-900 dark:text-green-100">
+              <Users className="h-4 w-4" />
+              Voting in progress
+            </div>
+            <p className="mt-2 text-gray-700 dark:text-gray-200">
+              {totalVotes}/{participantCount} participants have voted{allVoted ? '. Waiting for the organizer to finalize.' : '. Pick your favorite spot!'}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <div className="h-2 flex-1 rounded-full bg-green-100 dark:bg-green-800/40">
+                <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${percent}%` }} />
+              </div>
+              {allVoted && (
+                <span className="flex items-center gap-1 text-xs font-semibold text-green-700 dark:text-green-200">
+                  <CheckCircle className="h-4 w-4" />
+                  All votes in
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      }
+      case 'FINALIZED': {
+        const endedAt = event.votingEndedAt ? new Date(event.votingEndedAt).toLocaleString('en-US') : null
+        const finalRecommendation =
+          recommendations.find(rec => rec.id === event.finalLocationId) ||
+          event.finalLocation ||
+          recommendations[0]
 
-        {/* Event Info */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl mb-2">
-                  📍 {event.title}
+        if (!finalRecommendation) {
+          return (
+            <div className={`${baseClasses} border-purple-200 bg-purple-50/80 dark:bg-purple-900/20`}>
+              <div className="flex flex-wrap items-center gap-2 font-semibold text-purple-900 dark:text-purple-100">
+                <Trophy className="h-4 w-4" />
+                <span>Final location confirmed</span>
+                {endedAt && (
+                  <span className="text-xs font-normal text-purple-700 dark:text-purple-200">
+                    Confirmed on {endedAt}
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-gray-700 dark:text-gray-200">
+                Final location selected
+              </p>
+            </div>
+          )
+        }
+
+        const voteData = getVoteDataForRecommendation(finalRecommendation.id)
+
+        return (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2 font-semibold text-purple-900 dark:text-purple-100">
+              <Trophy className="h-4 w-4" />
+              <span>Final location confirmed</span>
+              {endedAt && (
+                <span className="text-xs font-normal text-purple-700 dark:text-purple-200">
+                  Confirmed on {endedAt}
+                </span>
+              )}
+            </div>
+            <RecommendationCard
+              recommendation={finalRecommendation}
+              voteData={voteData}
+              isWinner
+              showVotingButton={false}
+              eventId={eventId}
+              userNickname={userNickname}
+              onVoteChange={handleVoteChange}
+              highlight
+            />
+          </div>
+        )
+      }
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div>
+      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
+
+        <Card className="bg-white/95 text-gray-900 shadow-2xl dark:bg-gray-900/90 dark:text-gray-100">
+          <CardHeader className="space-y-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div> 
+                <CardTitle className="text-3xl">
+                  {event.title}
                 </CardTitle>
-                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
                   <p className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-4 w-4 text-gray-500" />
                     Hosted by {participants.find(p => p.isCreator)?.nickname}
                   </p>
                   {event.eventTime && (
                     <p className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-4 w-4 text-gray-500" />
                       {new Date(event.eventTime).toLocaleString('en-US')}
                     </p>
                   )}
                   <p className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
                     {purposeMap[event.purpose as keyof typeof purposeMap] || 'Other'}
                   </p>
                 </div>
               </div>
+              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between lg:w-auto lg:flex-col lg:items-end">
+                {userNickname && (
+                  <div className="inline-flex items-center gap-2 rounded-full bg-green-100/80 px-4 py-2 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-100">
+                    <Users className="h-4 w-4" />
+                    <span className="font-bold">{userNickname}</span>
+                    <span className="text-xs font-semibold tracking-wide">
+                      {isCreator ? 'You are Organizer' : 'You are Participant'}
+                    </span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {canJoin && (
+                    <Button variant="default" onClick={() => setShowJoinDialog(true)}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Join event
+                    </Button>
+                  )}
+                  {event.status === 'VOTING' && isCreator && votes.length > 0 && (
+                    <Button variant="default" onClick={handleFinalizeEvent}>
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Finalize location
+                    </Button>
+                  )}
+                  {event.status === 'READY' && (
+                    <Button variant="outline" onClick={fetchEventData}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-          </CardHeader>
-        </Card>
 
-        {/* Share Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Invite more friends:</CardTitle>
+            {renderStatusSummary()}
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded p-3 font-mono text-sm">
-                {window.location.origin}/event/{eventId}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex-1 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100">
+                {shareDisplayUrl}
               </div>
-              <Button onClick={handleCopyLink} variant="outline">
-                <Copy className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleCopyLink} variant="outline">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy link
+                </Button>
+                <Button onClick={handleShare} variant="secondary" disabled={!shareUrl}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
             </div>
-            <div className="text-center text-sm text-gray-600 dark:text-gray-300">
-              Event code: <span className="font-bold text-lg tracking-wider">{event.shortCode}</span>
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+              <span>
+                Event code:{' '}
+                <span className="font-semibold tracking-wider text-gray-900 dark:text-gray-100">
+                  {event.shortCode}
+                </span>
+              </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Status Banner */}
-        {(() => {
-          switch (event.status) {
-            case 'WAITING':
-              return <WaitingBanner event={event} participants={participants} />
-            case 'READY':
-              return (
-                <ReadyBanner
-                  error={recommendationError}
-                  canRetry={isCreator}
-                  onRetry={isCreator ? handleRetryRecommendations : undefined}
-                />
-              )
-            case 'VOTING':
-              const totalVotes = votes.reduce((sum, v) => sum + v.voteCount, 0)
-              return (
-                <VotingBanner
-                  totalVotes={totalVotes}
-                  participantCount={participants.length}
-                />
-              )
-            case 'FINALIZED':
-              return (
-                <FinalizedBanner
-                  finalLocation={event.finalLocation}
-                  votingEndedAt={event.votingEndedAt ? new Date(event.votingEndedAt) : undefined}
-                />
-              )
-            default:
-              return null
-          }
-        })()}
-
         {/* Participants */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Joined {participants.length}/{event.expectedParticipants} participants
-            </CardTitle>
+        <Card className="bg-white/95 shadow-xl dark:bg-gray-900/90">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                <Users className="h-5 w-5" />
+                Participants
+              </CardTitle>
+              <p className="text-sm text-gray-500">
+                Joined {participants.length}/{event.expectedParticipants}{' '}
+                {participants.length < event.expectedParticipants && `· Need ${event.expectedParticipants - participants.length} more`}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setParticipantListOpen(prev => !prev)}
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300"
+            >
+              {isParticipantListOpen ? 'Hide details' : 'View details'}
+              <ChevronDown
+                className={`ml-1 h-4 w-4 transition-transform ${isParticipantListOpen ? 'rotate-180' : ''}`}
+              />
+            </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {participants.map(participant => (
-                <div
-                  key={participant.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                >
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="font-medium">
-                      {participant.nickname}
-                      {participant.isCreator && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-                          Organizer
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+          {isParticipantListOpen && (
+            <CardContent className="space-y-4 pt-0">
+              <div className="grid gap-3 md:grid-cols-2">
+                {participants.map(participant => (
+                  <div
+                    key={participant.id}
+                    className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">
+                        {participant.nickname}
+                        {participant.isCreator && (
+                          <span className="ml-2 text-xs font-medium text-blue-600 dark:text-blue-300">
+                            Organizer
+                          </span>
+                        )}
+                      </p>
+                      <span className="text-xs text-gray-500">
+                        {dateUtils.formatRelativeTime(new Date(participant.joinedAt))}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-gray-600 dark:text-gray-300">
                       {participant.address}
                     </p>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {dateUtils.formatRelativeTime(new Date(participant.joinedAt))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
               {participants.length < event.expectedParticipants && (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Waiting for more participants...</p>
-                  <p className="text-sm mt-2">
-                    Need {event.expectedParticipants - participants.length} more people. Recommendations will generate automatically once everyone joins.
-                  </p>
+                <div className="rounded-2xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
+                  Waiting for more participants... Recommendations will generate automatically once everyone joins.
                 </div>
               )}
-            </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
 
         {/* Recommendations Section */}
         {(event.status === 'VOTING' || event.status === 'FINALIZED') && recommendations.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {event.status === 'VOTING' ? '🗳️ Vote for the final spot' : '🏆 Recommended locations'}
-                {event.status === 'VOTING' && (
-                  <span className="text-sm font-normal text-gray-600">
-                    Vote for your favorite location
-                  </span>
-                )}
-              </CardTitle>
+          <Card className="bg-white/95 text-gray-900 shadow-2xl dark:bg-gray-900/90 dark:text-gray-100">
+            <CardHeader className="space-y-2">
+              <h2 className="text-2xl font-semibold">
+                {event.status === 'VOTING' ? '🗳️ Vote for the final spot' : 'Recommended locations'}
+              </h2>
+              {event.status === 'VOTING' && (
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Choose your favorite location. You can change your vote anytime.
+                </p>
+              )}
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {recommendations.map((rec, index) => {
-                  // Get vote data for this recommendation
-                  const voteData = votes.find(v => v.recommendationId === rec.id) || {
-                    voteCount: 0,
-                    voters: [],
-                    hasCurrentUserVoted: false
-                  }
-
-                  // Check if this is the winner (most votes)
-                  const maxVotes = Math.max(...votes.map(v => v.voteCount), 0)
-                  const isWinner = voteData.voteCount > 0 && voteData.voteCount === maxVotes
-
-                  return (
-                    <RecommendationCard
-                      key={rec.id}
-                      recommendation={rec}
-                      rank={index + 1}
-                      voteData={voteData}
-                      isWinner={isWinner}
-                      showVoting={event.status === 'VOTING'}
-                      userNickname={userNickname}
-                      eventId={eventId}
-                      onVoteChange={handleVoteChange}
-                    />
-                  )
-                })}
-              </div>
+            <CardContent className="space-y-4">
+              {recommendations.map(rec => {
+                const voteData = getVoteDataForRecommendation(rec.id)
+                const maxVotes = Math.max(...votes.map(v => v.voteCount), 0)
+                const isWinner = voteData.voteCount > 0 && voteData.voteCount === maxVotes
+                return (
+                  <RecommendationCard
+                    key={rec.id}
+                    recommendation={rec}
+                    voteData={voteData}
+                    isWinner={isWinner}
+                    showVotingButton={event.status === 'VOTING' && Boolean(userNickname)}
+                    eventId={eventId}
+                    userNickname={userNickname}
+                    onVoteChange={handleVoteChange}
+                  />
+                )
+              })}
             </CardContent>
           </Card>
         )}
@@ -540,109 +675,121 @@ export default function EventDetailPage() {
   )
 }
 
+interface RecommendationVoteData {
+  voteCount: number
+  voters: string[]
+  hasCurrentUserVoted: boolean
+}
+
+interface RecommendationCardProps {
+  recommendation: Recommendation
+  voteData: RecommendationVoteData
+  isWinner: boolean
+  showVotingButton?: boolean
+  eventId?: string
+  userNickname?: string | null
+  onVoteChange?: () => void
+  highlight?: boolean
+}
+
 function RecommendationCard({
   recommendation,
-  rank,
   voteData,
   isWinner,
-  showVoting,
-  userNickname,
+  showVotingButton = false,
   eventId,
-  onVoteChange
-}: {
-  recommendation: Recommendation
-  rank: number
-  voteData?: { voteCount: number; voters: string[]; hasCurrentUserVoted: boolean }
-  isWinner?: boolean
-  showVoting?: boolean
-  userNickname?: string | null
-  eventId?: string
-  onVoteChange?: () => void
-}) {
-  const rankEmojis = ['🏆', '🥈', '🥉']
-  const rankEmoji = rankEmojis[rank - 1] || '📍'
+  userNickname,
+  onVoteChange,
+  highlight = false
+}: RecommendationCardProps) {
+  const shouldShowVotingButton = Boolean(showVotingButton && userNickname && eventId && onVoteChange)
 
   return (
-    <Card className={`border-l-4 ${isWinner ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10' : 'border-l-blue-500'}`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {rankEmoji} Recommendation #{rank}
-            <span className="text-lg font-semibold">{recommendation.locationName}</span>
-            {isWinner && <WinnerBadge isWinner={true} voteCount={voteData?.voteCount || 0} />}
+    <div
+      className={`rounded-3xl border bg-white/95 text-gray-900 shadow-lg transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl dark:bg-gray-900/90 dark:text-gray-100 ${
+        highlight ? 'ring-2 ring-violet-200 dark:ring-violet-500/40' : ''
+      }`}
+    >
+      <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-1 items-center gap-3">
+          <div>
+            <p className="text-lg font-semibold flex flex-wrap items-center gap-5">
+              {recommendation.locationName}
+              {isWinner && <WinnerBadge isWinner voteCount={voteData.voteCount} />}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {recommendation.locationType} · Suitability ⭐ {recommendation.suitabilityScore}/10
+            </p>
           </div>
-
-          {showVoting && userNickname && eventId && onVoteChange && (
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            {voteData.voteCount} votes
+          </span>
+          {shouldShowVotingButton && userNickname && eventId && onVoteChange && (
             <VotingButton
               recommendationId={recommendation.id}
               eventId={eventId}
-              voteCount={voteData?.voteCount || 0}
-              voters={voteData?.voters || []}
-              hasVoted={voteData?.hasCurrentUserVoted || false}
+              voteCount={voteData.voteCount}
+              voters={voteData.voters}
+              hasVoted={voteData.hasCurrentUserVoted}
               userNickname={userNickname}
               onVoteChange={onVoteChange}
             />
           )}
         </div>
-
-        <div className="text-sm text-gray-600">
-          {recommendation.locationType} • Suitability: ⭐ {recommendation.suitabilityScore}/10
-          {voteData && voteData.voteCount > 0 && (
-            <span className="ml-2">• {voteData.voteCount} votes</span>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-gray-700 dark:text-gray-300">
-          💬 {recommendation.description}
-        </p>
+      </div>
+      <div className="border-t border-gray-100 px-4 py-4 text-sm dark:border-gray-800">
+        <p className="text-gray-700 dark:text-gray-200">💬 {recommendation.description}</p>
 
         {recommendation.fairnessAnalysis && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              📊 {recommendation.fairnessAnalysis}
-            </p>
+          <div className="mt-4 rounded-2xl bg-blue-50/80 p-3 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100">
+            📊 {recommendation.fairnessAnalysis}
           </div>
         )}
 
         {recommendation.distances && recommendation.distances.length > 0 && (
-          <div>
-            <p className="font-medium mb-2">Distances for each participant:</p>
-            <div className="space-y-3">
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Distances for each participant
+            </p>
+            <div className="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-dashed border-gray-200 dark:divide-gray-800 dark:border-gray-700">
               {recommendation.distances.map((distance, idx) => {
                 const participantAddress = distance.participant_address
                 const destinationAddress = distance.recommendation_address || recommendation.locationName
-                const transportInfo = [distance.transport, distance.time].filter(Boolean).join(' | ')
+                const transportInfo = [distance.transport, distance.time].filter(Boolean).join(' · ')
                 const canOpenRoute = Boolean(participantAddress && destinationAddress)
+
                 return (
                   <div
-                    key={idx}
-                    className="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                    key={`${distance.participant}-${idx}`}
+                    className="flex flex-col gap-3 px-3 py-3 text-sm text-gray-700 dark:text-gray-200 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                      <p>
-                        • {distance.participant}: {distance.estimate}
-                        {transportInfo && <> ({transportInfo})</>}
+                    <div>
+                      <p className="font-medium">{distance.participant}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        From: {participantAddress || 'Address unavailable'}
                       </p>
-                      {participantAddress && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          From: {participantAddress}
-                        </p>
-                      )}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!canOpenRoute}
-                      onClick={() => {
-                        if (canOpenRoute && participantAddress && destinationAddress) {
-                          openGoogleMapsRoute(participantAddress, destinationAddress)
-                        }
-                      }}
-                    >
-                      <MapPin className="mr-2 h-4 w-4" />
-                      View route
-                    </Button>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                      <span>
+                        {distance.estimate}
+                        {transportInfo && ` (${transportInfo})`}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!canOpenRoute}
+                        onClick={() => {
+                          if (canOpenRoute && participantAddress && destinationAddress) {
+                            openGoogleMapsRoute(participantAddress, destinationAddress)
+                          }
+                        }}
+                      >
+                        <MapPin className="mr-2 h-4 w-4" />
+                        View route
+                      </Button>
+                    </div>
                   </div>
                 )
               })}
@@ -651,18 +798,18 @@ function RecommendationCard({
         )}
 
         {recommendation.facilities && recommendation.facilities.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {recommendation.facilities.map((facility, idx) => (
               <span
                 key={idx}
-                className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded"
+                className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-200"
               >
                 {facility}
               </span>
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
