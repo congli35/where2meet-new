@@ -63,14 +63,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-white">
-      <div className="mx-auto flex max-w-4xl flex-col gap-12 px-4 py-12 text-slate-900 sm:px-6 lg:px-8">
-        <Card className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60">
-          <CardHeader className="space-y-6 text-center">
-            <div>
-              <h1 className="text-5xl font-bold leading-tight md:text-6xl">
+      <div className="mx-auto flex max-w-4xl flex-col gap-16 px-4 py-12 text-slate-900 sm:px-6 lg:px-8">
+        <Card className="animate-in fade-in slide-in-from-bottom-4 duration-700 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/60">
+          <CardHeader className="space-y-8 text-center">
+            <div className="space-y-4">
+              <h1 className="text-5xl font-bold leading-[1.2] md:text-6xl">
                 Where2Meet
               </h1>
-              <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
+              <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                 Where2Meet makes it effortless to choose the perfect place together.
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function HomePage() {
               <Button
                 asChild
                 size="lg"
-                className="w-fit px-8 transition-shadow shadow-lg hover:shadow-xl"
+                className="w-fit px-8 shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
               >
                 <Link href="/create">
                   <Plus className="h-5 w-5" />
@@ -87,10 +87,10 @@ export default function HomePage() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 border-t border-slate-200/70 pt-6 text-center dark:border-slate-700">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold">Join with a code</h2>
-              <p className="text-base text-slate-600 dark:text-slate-300">
+          <CardContent className="space-y-6 border-t border-slate-200/70 pt-8 text-center dark:border-slate-700">
+            <div className="space-y-3">
+              <h2 className="text-3xl font-bold leading-[1.2]">Join with a code</h2>
+              <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">
                 Enter the six-character Where2Meet code you received.
               </p>
             </div>
@@ -100,14 +100,14 @@ export default function HomePage() {
                 value={eventCode}
                 onChange={(e) => setEventCode(e.target.value.toUpperCase())}
                 maxLength={6}
-                className="flex-1 text-center text-lg tracking-[0.4em] sm:w-40 sm:flex-initial"
+                className="text-center text-lg tracking-[0.4em] transition-all duration-200 sm:w-48"
                 aria-label="Event code"
               />
               <Button
                 onClick={handleJoinByCode}
                 disabled={eventCode.length !== 6}
                 size="lg"
-                className="transition-all duration-200"
+                className="transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Join
               </Button>
@@ -116,17 +116,17 @@ export default function HomePage() {
         </Card>
 
         {hasRecentEvents && (
-          <section id="recent">
-            <Card className="border-slate-200 bg-white/80 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
-              <CardHeader className="text-center text-3xl">
-                <CardTitle className="font-bold text-black">
+          <section id="recent" className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+            <Card className="rounded-2xl border-slate-200 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/60">
+              <CardHeader className="space-y-3 text-center">
+                <CardTitle className="text-3xl font-bold leading-[1.2] text-black dark:text-white">
                   Your recent Where2Meet plans
                 </CardTitle>
-                <p className="text-base text-slate-600 dark:text-slate-300">
+                <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">
                   Pick up where you left off and finalize the meetup.
                 </p>
               </CardHeader>
-              <CardContent className="space-y-10">
+              <CardContent className="space-y-4">
                 <div className="space-y-3">
                   {recentEvents.slice(0, 5).map(({ eventId, type }) => (
                     <RecentEventCard key={eventId} eventId={eventId} type={type} />
@@ -138,27 +138,28 @@ export default function HomePage() {
         )}
 
         {/* FAQ Section */}
-        <section id="faq" className="space-y-6 rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-sm p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 transition-all duration-300 hover:shadow-md">
-          <div className="text-center space-y-2">
+        <section id="faq" className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 space-y-8 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-8 shadow-sm hover:shadow-lg dark:border-slate-800 dark:bg-slate-900/60">
+          <div className="space-y-3 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
               FAQ
             </p>
-            <h2 className="text-3xl font-bold">Where2Meet answers</h2>
-            <p className="text-base text-slate-600 dark:text-slate-300">
+            <h2 className="text-3xl font-bold leading-[1.2]">Where2Meet answers</h2>
+            <p className="text-base leading-relaxed text-slate-600 dark:text-slate-300">
               The essentials people ask before sharing a Where2Meet plan.
             </p>
           </div>
           <div className="space-y-3">
-            {faqs.map((faq) => (
+            {faqs.map((faq, index) => (
               <Card
                 key={faq.question}
-                className="rounded-2xl border border-slate-100 bg-white/60 dark:border-slate-800 dark:bg-slate-900/30 transition-all duration-200 hover:shadow-sm"
+                className="rounded-xl border border-slate-100 bg-white/60 transition-all duration-200 hover:scale-[1.01] hover:shadow-md hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/30 dark:hover:border-slate-700"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardContent className="p-4 sm:p-5">
-                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                <CardContent className="p-5 sm:p-6">
+                  <h3 className="font-semibold leading-snug text-slate-900 dark:text-white">
                     {faq.question}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                     {faq.answer}
                   </p>
                 </CardContent>
@@ -168,7 +169,7 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 pt-8 mt-4 text-center text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
+        <footer className="mt-8 border-t border-slate-200 pt-8 text-center text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-400">
           <p aria-hidden="true">Where2Meet • No sign-up • Real-time collaboration • AI-powered suggestions</p>
         </footer>
       </div>
@@ -266,36 +267,34 @@ function RecentEventCard({ eventId, type }: { eventId: string; type: 'created' |
   const expectedParticipants = eventData.expectedParticipants || eventData.participants
 
   const cardClass = cn(
-    "hover:shadow-md transition-all duration-200 cursor-pointer border rounded-2xl",
+    "hover:shadow-lg transition-all duration-200 cursor-pointer border rounded-xl hover:scale-[1.01]",
     isCreatorEvent
       ? "border-blue-200 bg-blue-50/70 dark:border-blue-900/40 dark:bg-blue-950/30 hover:bg-blue-50/90 dark:hover:bg-blue-950/40"
       : "border-slate-100 bg-white/70 dark:border-slate-800 dark:bg-slate-900/30 hover:bg-white/80 dark:hover:bg-slate-900/40"
   )
 
   const ownershipBadgeClass = cn(
-    "text-xs px-2.5 py-1 rounded-full font-medium transition-all duration-200",
+    "text-xs px-2.5 py-1 rounded-full font-medium",
     isCreatorEvent
       ? "bg-amber-100/80 text-amber-900 dark:bg-amber-900/50 dark:text-amber-100"
       : "bg-emerald-100/80 text-emerald-900 dark:bg-emerald-900/50 dark:text-emerald-100"
   )
 
   const statusBadgeClass = cn(
-    "text-xs px-2.5 py-1 rounded-full font-medium transition-all duration-200",
+    "text-xs px-2.5 py-1 rounded-full font-medium",
     "bg-blue-100/80 text-blue-900 dark:bg-blue-900/50 dark:text-blue-100"
   )
 
   return (
     <Link href={`/event/${eventId}`} className="block">
       <Card className={cardClass}>
-        <CardContent className="p-4 sm:p-5">
+        <CardContent className="p-5 sm:p-6">
           <div className="flex justify-between items-start gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <h3 className="font-semibold text-slate-900 dark:text-white text-base flex-1">
-                  {eventData.title}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="flex-1 space-y-3">
+              <h3 className="font-semibold text-slate-900 dark:text-white text-base leading-snug">
+                {eventData.title}
+              </h3>
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className={statusBadgeClass}>
                   {getStatusLabel(eventData.status)}
                 </span>
@@ -304,10 +303,10 @@ function RecentEventCard({ eventId, type }: { eventId: string; type: 'created' |
                 </span>
               </div>
               <div className="space-y-1.5">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Created by: <span className="font-medium text-slate-900 dark:text-slate-200">{eventData.creator}</span>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  Created by: <span className="font-medium text-slate-900 dark:text-slate-100">{eventData.creator}</span>
                 </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                   {userNickname && (
                     <>
                       You: <span className="font-medium">{userNickname}</span> •{' '}
@@ -316,12 +315,12 @@ function RecentEventCard({ eventId, type }: { eventId: string; type: 'created' |
                   <span>{eventData.participants}/{expectedParticipants} participants</span>
                   {eventData.eventTime && ` • ${dateUtils.formatRelativeTime(eventData.eventTime)}`}
                 </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">
+                <p className="text-xs leading-relaxed text-slate-400 dark:text-slate-500">
                   Created {dateUtils.formatRelativeTime(eventData.createdAt)}
                 </p>
               </div>
             </div>
-            <div className="shrink-0 text-slate-300 dark:text-slate-600 text-lg font-light">
+            <div className="shrink-0 text-slate-300 dark:text-slate-600 text-xl font-light transition-transform duration-200 group-hover:translate-x-1">
               →
             </div>
           </div>

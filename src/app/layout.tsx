@@ -25,13 +25,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://where2meet.app",
+    url: "https://where2meet.net",
     siteName: "Where2Meet",
     title: "Where2Meet - Fair meetup planning for everyone",
     description: "Where2Meet helps groups find fair meeting locations instantly. No sign-ups needed—invite friends and get AI-powered spot recommendations.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: "Where2Meet - Fair meetup planning",
@@ -47,11 +47,8 @@ export const metadata: Metadata = {
     creator: "@where2meet",
     site: "@where2meet",
   },
-  verification: {
-    google: "your-google-verification-code",
-  },
   alternates: {
-    canonical: "https://where2meet.app",
+    canonical: "https://where2meet.net",
   },
   category: "Technology",
 };
