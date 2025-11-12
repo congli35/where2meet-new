@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { Toaster } from "@/components/ui/sonner"
 import { GoogleAnalytics } from '@next/third-parties/google'
 
@@ -118,9 +119,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-[linear-gradient(45deg,_#FF7DB4,_#654EA3)] text-white antialiased">
-        <SiteHeader />
-        <main>{children}</main>
+      <body className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-100 to-purple-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 text-gray-900 dark:text-gray-100 antialiased">
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </div>
         <Toaster />
         <GoogleAnalytics gaId="G-EH2F4J018H"/>
       </body>

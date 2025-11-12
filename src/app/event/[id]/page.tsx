@@ -499,8 +499,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
 
         <Card className="overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl ring-1 ring-black/5 dark:bg-gray-900/80 dark:ring-white/10">
           <div className="bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10">
@@ -742,7 +741,6 @@ export default function EventDetailPage() {
           eventId={eventId}
           onSuccess={handleJoinSuccess}
         />
-      </div>
     </div>
   )
 }

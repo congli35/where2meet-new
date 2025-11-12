@@ -168,10 +168,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="mt-8 border-t border-slate-200 pt-8 text-center text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-400">
-          <p aria-hidden="true">Where2Meet • No sign-up • Real-time collaboration • AI-powered suggestions</p>
-        </footer>
       </div>
     </div>
   )
