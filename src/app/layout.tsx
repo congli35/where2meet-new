@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { SiteHeader } from "@/components/site-header"
 import { Toaster } from "@/components/ui/sonner"
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 import "./globals.css"
 
@@ -49,8 +50,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://where2meet.net",
-  },
-  category: "Technology",
+  }
 };
 
 export default function RootLayout({
@@ -61,6 +61,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+					async
+					src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3607695059683349"
+					crossOrigin="anonymous"
+				/>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -117,6 +122,7 @@ export default function RootLayout({
         <SiteHeader />
         <main>{children}</main>
         <Toaster />
+        <GoogleAnalytics gaId="G-EH2F4J018H"/>
       </body>
     </html>
   )

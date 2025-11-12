@@ -335,7 +335,7 @@ export default function EventDetailPage() {
   }
 
   const renderStatusSummary = () => {
-    const baseClasses = 'rounded-2xl border px-4 py-3 text-sm shadow-sm'
+    const baseClasses = 'rounded-2xl border px-5 py-4 text-sm shadow-sm backdrop-blur-sm transition-all duration-300'
     switch (event.status) {
       case 'WAITING': {
         const joined = participants.length
@@ -343,16 +343,18 @@ export default function EventDetailPage() {
         const remaining = Math.max(target - joined, 0)
         const percent = Math.min((joined / target) * 100, 100)
         return (
-          <div className={`${baseClasses} border-yellow-200 bg-yellow-50/80 dark:bg-yellow-900/20`}>
-            <div className="flex items-center gap-2 font-semibold text-yellow-900 dark:text-yellow-100">
-              <Clock className="h-4 w-4" />
-              Waiting for participants
+          <div className={`${baseClasses} border-amber-200 bg-gradient-to-r from-amber-50/90 to-yellow-50/90 ring-1 ring-amber-200/50 dark:from-amber-900/20 dark:to-yellow-900/20 dark:border-amber-700/50 dark:ring-amber-700/30`}>
+            <div className="flex items-center gap-3 font-semibold text-amber-900 dark:text-amber-100">
+              <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/50">
+                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <span className="text-base">Waiting for participants</span>
             </div>
-            <p className="mt-2 text-gray-700 dark:text-gray-200">
-              Joined {joined}/{target}. {remaining > 0 ? `Need ${remaining} more to start.` : 'Everyone is here!'}
+            <p className="mt-3 text-gray-700 dark:text-gray-200 leading-relaxed">
+              <span className="font-semibold text-amber-800 dark:text-amber-200">{joined}</span> of <span className="font-semibold text-amber-800 dark:text-amber-200">{target}</span> joined. {remaining > 0 ? `Need ${remaining} more to start.` : 'Everyone is here!'}
             </p>
-            <div className="mt-3 h-2 rounded-full bg-yellow-100 dark:bg-yellow-800/40">
-              <div className="h-2 rounded-full bg-yellow-500 transition-all" style={{ width: `${percent}%` }} />
+            <div className="mt-4 h-2.5 rounded-full bg-amber-100/50 overflow-hidden dark:bg-amber-800/30">
+              <div className="h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 transition-all duration-500 shadow-sm" style={{ width: `${percent}%` }} />
             </div>
           </div>
         )
@@ -360,21 +362,32 @@ export default function EventDetailPage() {
       case 'READY': {
         if (recommendationError) {
           return (
-            <div className={`${baseClasses} border-red-200 bg-red-50/80 dark:bg-red-900/20`}>
-              <div className="flex items-center gap-2 font-semibold text-red-800 dark:text-red-100">
-                <Target className="h-4 w-4" />
-                Failed to generate recommendations
+            <div className={`${baseClasses} border-red-200 bg-gradient-to-r from-red-50/90 to-rose-50/90 ring-1 ring-red-200/50 dark:from-red-900/20 dark:to-rose-900/20 dark:border-red-700/50 dark:ring-red-700/30`}>
+              <div className="flex items-center gap-3 font-semibold text-red-800 dark:text-red-100">
+                <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/50">
+                  <Target className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <span className="text-base">Failed to generate recommendations</span>
               </div>
-              <p className="mt-2 text-gray-700 dark:text-gray-200">
+              <p className="mt-3 text-gray-700 dark:text-gray-200 leading-relaxed">
                 {recommendationError}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-3">
                 {isCreator && (
-                  <Button size="sm" onClick={handleRetryRecommendations}>
+                  <Button
+                    size="sm"
+                    onClick={handleRetryRecommendations}
+                    className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                  >
                     Try again
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={fetchEventData}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={fetchEventData}
+                  className="border-red-200 bg-white/80 hover:bg-white shadow-sm hover:shadow-md transition-all duration-200 dark:border-red-700 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+                >
                   Refresh
                 </Button>
               </div>
@@ -382,12 +395,14 @@ export default function EventDetailPage() {
           )
         }
         return (
-          <div className={`${baseClasses} border-blue-200 bg-blue-50/80 dark:bg-blue-900/20`}>
-            <div className="flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              Generating recommendations
+          <div className={`${baseClasses} border-blue-200 bg-gradient-to-r from-blue-50/90 to-cyan-50/90 ring-1 ring-blue-200/50 dark:from-blue-900/20 dark:to-cyan-900/20 dark:border-blue-700/50 dark:ring-blue-700/30`}>
+            <div className="flex items-center gap-3 font-semibold text-blue-900 dark:text-blue-100">
+              <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/50 animate-pulse">
+                <RefreshCw className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="text-base">Generating recommendations</span>
             </div>
-            <p className="mt-2 text-gray-700 dark:text-gray-200">
+            <p className="mt-3 text-gray-700 dark:text-gray-200 leading-relaxed">
               We&apos;re analyzing everyone&apos;s locations to suggest the fairest spots. Hang tight!
             </p>
           </div>
@@ -398,22 +413,24 @@ export default function EventDetailPage() {
         const percent = Math.min((totalVotes / participantCount) * 100, 100)
         const allVoted = participantCount > 0 && totalVotes >= participantCount
         return (
-          <div className={`${baseClasses} border-green-200 bg-green-50/80 dark:bg-green-900/20`}>
-            <div className="flex items-center gap-2 font-semibold text-green-900 dark:text-green-100">
-              <Users className="h-4 w-4" />
-              Voting in progress
+          <div className={`${baseClasses} border-emerald-200 bg-gradient-to-r from-emerald-50/90 to-teal-50/90 ring-1 ring-emerald-200/50 dark:from-emerald-900/20 dark:to-teal-900/20 dark:border-emerald-700/50 dark:ring-emerald-700/30`}>
+            <div className="flex items-center gap-3 font-semibold text-emerald-900 dark:text-emerald-100">
+              <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/50">
+                <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <span className="text-base">Voting in progress</span>
             </div>
-            <p className="mt-2 text-gray-700 dark:text-gray-200">
-              {totalVotes}/{participantCount} participants have voted{allVoted ? '. Waiting for the organizer to finalize.' : '. Pick your favorite spot!'}
+            <p className="mt-3 text-gray-700 dark:text-gray-200 leading-relaxed">
+              <span className="font-semibold text-emerald-800 dark:text-emerald-200">{totalVotes}</span> of <span className="font-semibold text-emerald-800 dark:text-emerald-200">{participantCount}</span> participants have voted{allVoted ? '. Waiting for the organizer to finalize.' : '. Pick your favorite spot!'}
             </p>
-            <div className="mt-3 flex items-center gap-2">
-              <div className="h-2 flex-1 rounded-full bg-green-100 dark:bg-green-800/40">
-                <div className="h-2 rounded-full bg-green-500 transition-all" style={{ width: `${percent}%` }} />
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-2.5 flex-1 rounded-full bg-emerald-100/50 overflow-hidden dark:bg-emerald-800/30">
+                <div className="h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-500 shadow-sm" style={{ width: `${percent}%` }} />
               </div>
               {allVoted && (
-                <span className="flex items-center gap-1 text-xs font-semibold text-green-700 dark:text-green-200">
+                <span className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-200">
                   <CheckCircle className="h-4 w-4" />
-                  All votes in
+                  Complete
                 </span>
               )}
             </div>
@@ -429,17 +446,19 @@ export default function EventDetailPage() {
 
         if (!finalRecommendation) {
           return (
-            <div className={`${baseClasses} border-purple-200 bg-purple-50/80 dark:bg-purple-900/20`}>
-              <div className="flex flex-wrap items-center gap-2 font-semibold text-purple-900 dark:text-purple-100">
-                <Trophy className="h-4 w-4" />
-                <span>Final location confirmed</span>
+            <div className={`${baseClasses} border-purple-200 bg-gradient-to-r from-purple-50/90 to-pink-50/90 ring-1 ring-purple-200/50 dark:from-purple-900/20 dark:to-pink-900/20 dark:border-purple-700/50 dark:ring-purple-700/30`}>
+              <div className="flex flex-wrap items-center gap-3 font-semibold text-purple-900 dark:text-purple-100">
+                <div className="rounded-full bg-purple-100 p-2 dark:bg-purple-900/50">
+                  <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <span className="text-base">Final location confirmed</span>
                 {endedAt && (
                   <span className="text-xs font-normal text-purple-700 dark:text-purple-200">
                     Confirmed on {endedAt}
                   </span>
                 )}
               </div>
-              <p className="mt-2 text-gray-700 dark:text-gray-200">
+              <p className="mt-3 text-gray-700 dark:text-gray-200 leading-relaxed">
                 Final location selected
               </p>
             </div>
@@ -449,10 +468,12 @@ export default function EventDetailPage() {
         const voteData = getVoteDataForRecommendation(finalRecommendation.id)
 
         return (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 font-semibold text-purple-900 dark:text-purple-100">
-              <Trophy className="h-4 w-4" />
-              <span>Final location confirmed</span>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3 font-semibold text-purple-900 dark:text-purple-100">
+              <div className="rounded-full bg-gradient-to-r from-purple-100 to-pink-100 p-2 dark:from-purple-900/50 dark:to-pink-900/50 shadow-sm">
+                <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <span className="text-base">Final location confirmed</span>
               {endedAt && (
                 <span className="text-xs font-normal text-purple-700 dark:text-purple-200">
                   Confirmed on {endedAt}
@@ -478,141 +499,185 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div>
-      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-950 dark:via-slate-900 dark:to-gray-900">
+      <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
 
-        <Card className="bg-white/95 text-gray-900 shadow-2xl dark:bg-gray-900/90 dark:text-gray-100">
-          <CardHeader className="space-y-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div> 
-                <CardTitle className="text-3xl">
-                  {event.title}
-                </CardTitle>
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                  <p className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    Hosted by {participants.find(p => p.isCreator)?.nickname}
-                  </p>
-                  {event.eventTime && (
-                    <p className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      {new Date(event.eventTime).toLocaleString('en-US')}
-                    </p>
-                  )}
-                  <p className="flex items-center gap-2">
-                    {purposeMap[event.purpose as keyof typeof purposeMap] || 'Other'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between lg:w-auto lg:flex-col lg:items-end">
-                {userNickname && (
-                  <div className="inline-flex items-center gap-2 rounded-full bg-green-100/80 px-4 py-2 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-100">
-                    <Users className="h-4 w-4" />
-                    <span className="font-bold">{userNickname}</span>
-                    <span className="text-xs font-semibold tracking-wide">
-                      {isCreator ? 'You are Organizer' : 'You are Participant'}
-                    </span>
+        <Card className="overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl ring-1 ring-black/5 dark:bg-gray-900/80 dark:ring-white/10">
+          <div className="bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10">
+            <CardHeader className="space-y-6 pb-8">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-gray-100 dark:to-gray-300">
+                    {event.title}
+                  </CardTitle>
+                  <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                      <div className="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
+                        <Users className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <span>Hosted by <span className="font-semibold text-gray-900 dark:text-gray-100">{participants.find(p => p.isCreator)?.nickname}</span></span>
+                    </div>
+                    {event.eventTime && (
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        <div className="rounded-full bg-emerald-100 p-1.5 dark:bg-emerald-900/30">
+                          <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <span>{new Date(event.eventTime).toLocaleString('en-US')}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100/80 px-3 py-1.5 text-sm font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        {purposeMap[event.purpose as keyof typeof purposeMap] || 'Other'}
+                      </span>
+                    </div>
                   </div>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {canJoin && (
-                    <Button variant="default" onClick={() => setShowJoinDialog(true)}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Join event
-                    </Button>
+                </div>
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between lg:w-auto lg:flex-col lg:items-end">
+                  {userNickname && (
+                    <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-3 text-sm font-medium shadow-sm ring-1 ring-green-200/50 dark:from-green-900/20 dark:to-emerald-900/20 dark:ring-green-700/30">
+                      <div className="rounded-full bg-green-100 p-1.5 dark:bg-green-900/50">
+                        <Users className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-green-800 dark:text-green-200">{userNickname}</span>
+                        <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                          {isCreator ? 'Event Organizer' : 'Participant'}
+                        </span>
+                      </div>
+                    </div>
                   )}
-                  {event.status === 'VOTING' && isCreator && votes.length > 0 && (
-                    <Button variant="default" onClick={handleFinalizeEvent}>
-                      <Trophy className="h-4 w-4 mr-2" />
-                      Finalize location
-                    </Button>
-                  )}
-                  {event.status === 'READY' && (
-                    <Button variant="outline" onClick={fetchEventData}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {canJoin && (
+                      <Button
+                        variant="default"
+                        onClick={() => setShowJoinDialog(true)}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Join event
+                      </Button>
+                    )}
+                    {event.status === 'VOTING' && isCreator && votes.length > 0 && (
+                      <Button
+                        variant="default"
+                        onClick={handleFinalizeEvent}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                      >
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Finalize location
+                      </Button>
+                    )}
+                    {event.status === 'READY' && (
+                      <Button
+                        variant="outline"
+                        onClick={fetchEventData}
+                        className="border-gray-200 bg-white/50 hover:bg-white/80 shadow-sm hover:shadow-md transition-all duration-200 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:bg-gray-800/80"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {renderStatusSummary()}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex-1 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100">
+              {renderStatusSummary()}
+            </CardHeader>
+          </div>
+          <CardContent className="space-y-6 p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex-1 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50/30 px-4 py-3.5 font-mono text-sm text-gray-700 shadow-inner dark:border-gray-700 dark:from-gray-800 dark:to-blue-900/20 dark:text-gray-200">
                 {shareDisplayUrl}
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCopyLink} variant="outline">
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                  className="border-gray-200 bg-white/80 hover:bg-white shadow-sm hover:shadow-md transition-all duration-200 dark:border-gray-700 dark:bg-gray-800/80 dark:hover:bg-gray-800"
+                >
                   <Copy className="h-4 w-4 mr-2" />
                   Copy link
                 </Button>
-                <Button onClick={handleShare} variant="secondary" disabled={!shareUrl}>
+                <Button
+                  onClick={handleShare}
+                  variant="secondary"
+                  disabled={!shareUrl}
+                  className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 border-0 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 dark:from-gray-700 dark:to-gray-600 dark:text-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-500"
+                >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
                 </Button>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-              <span>
-                Event code:{' '}
-                <span className="font-semibold tracking-wider text-gray-900 dark:text-gray-100">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <div className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 text-blue-700 ring-1 ring-blue-200/50 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300 dark:ring-blue-700/30">
+                <span className="font-medium">Event code:</span>
+                <span className="font-bold tracking-wider text-blue-800 dark:text-blue-200">
                   {event.shortCode}
                 </span>
-              </span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Participants */}
-        <Card className="bg-white/95 shadow-xl dark:bg-gray-900/90">
-          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl ring-1 ring-black/5 dark:bg-gray-900/80 dark:ring-white/10">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10">
             <div>
-              <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                <Users className="h-5 w-5" />
-                Participants
+              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+                <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span>Participants</span>
               </CardTitle>
-              <p className="text-sm text-gray-500">
-                Joined {participants.length}/{event.expectedParticipants}{' '}
-                {participants.length < event.expectedParticipants && `· Need ${event.expectedParticipants - participants.length} more`}
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-semibold text-blue-600 dark:text-blue-400">{participants.length}</span> of <span className="font-semibold text-blue-600 dark:text-blue-400">{event.expectedParticipants}</span> joined
+                {participants.length < event.expectedParticipants && (
+                  <span className="text-gray-500 dark:text-gray-400"> · Need {event.expectedParticipants - participants.length} more</span>
+                )}
               </p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setParticipantListOpen(prev => !prev)}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-300"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800/50 transition-colors duration-200"
             >
               {isParticipantListOpen ? 'Hide details' : 'View details'}
               <ChevronDown
-                className={`ml-1 h-4 w-4 transition-transform ${isParticipantListOpen ? 'rotate-180' : ''}`}
+                className={`ml-2 h-4 w-4 transition-transform duration-200 ${isParticipantListOpen ? 'rotate-180' : ''}`}
               />
             </Button>
           </CardHeader>
           {isParticipantListOpen && (
-            <CardContent className="space-y-4 pt-0">
+            <CardContent className="space-y-4 p-6">
               <div className="grid gap-3 md:grid-cols-2">
                 {participants.map(participant => (
                   <div
                     key={participant.id}
-                    className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-100"
+                    className="group rounded-2xl border border-gray-100 bg-gradient-to-br from-gray-50/70 to-blue-50/30 p-4 text-sm shadow-sm hover:shadow-md transition-all duration-200 dark:border-gray-800 dark:from-gray-800/60 dark:to-blue-900/10"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold">
-                        {participant.nickname}
-                        {participant.isCreator && (
-                          <span className="ml-2 text-xs font-medium text-blue-600 dark:text-blue-300">
-                            Organizer
-                          </span>
-                        )}
-                      </p>
-                      <span className="text-xs text-gray-500">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+                          <Users className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">
+                            {participant.nickname}
+                          </p>
+                          {participant.isCreator && (
+                            <span className="inline-block mt-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                              Organizer
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {dateUtils.formatRelativeTime(new Date(participant.joinedAt))}
                       </span>
                     </div>
-                    <p className="mt-2 text-gray-600 dark:text-gray-300">
+                    <p className="mt-3 pl-11 text-sm text-gray-600 dark:text-gray-300">
                       {participant.address}
                     </p>
                   </div>
@@ -620,8 +685,10 @@ export default function EventDetailPage() {
               </div>
 
               {participants.length < event.expectedParticipants && (
-                <div className="rounded-2xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
-                  Waiting for more participants... Recommendations will generate automatically once everyone joins.
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gradient-to-r from-gray-50/50 to-blue-50/30 p-5 text-center shadow-inner dark:border-gray-700 dark:from-gray-800/50 dark:to-blue-900/20">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Waiting for more participants... Recommendations will generate automatically once everyone joins.
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -630,18 +697,23 @@ export default function EventDetailPage() {
 
         {/* Recommendations Section */}
         {(event.status === 'VOTING' || event.status === 'FINALIZED') && recommendations.length > 0 && (
-          <Card className="bg-white/95 text-gray-900 shadow-2xl dark:bg-gray-900/90 dark:text-gray-100">
-            <CardHeader className="space-y-2">
-              <h2 className="text-2xl font-semibold">
-                {event.status === 'VOTING' ? '🗳️ Vote for the final spot' : 'Recommended locations'}
-              </h2>
+          <Card className="overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl ring-1 ring-black/5 dark:bg-gray-900/80 dark:ring-white/10">
+            <CardHeader className="space-y-3 bg-gradient-to-r from-purple-600/5 via-pink-600/5 to-rose-600/5 dark:from-purple-500/10 dark:via-pink-500/10 dark:to-rose-500/10">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-purple-100 p-2 dark:bg-purple-900/30">
+                  <Trophy className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent dark:from-gray-100 dark:to-gray-300">
+                  {event.status === 'VOTING' ? 'Vote for the final spot' : 'Recommended locations'}
+                </h2>
+              </div>
               {event.status === 'VOTING' && (
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-14">
                   Choose your favorite location. You can change your vote anytime.
                 </p>
               )}
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               {recommendations.map(rec => {
                 const voteData = getVoteDataForRecommendation(rec.id)
                 const maxVotes = Math.max(...votes.map(v => v.voteCount), 0)
@@ -706,26 +778,41 @@ function RecommendationCard({
 
   return (
     <div
-      className={`rounded-3xl border bg-white/95 text-gray-900 shadow-lg transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl dark:bg-gray-900/90 dark:text-gray-100 ${
-        highlight ? 'ring-2 ring-violet-200 dark:ring-violet-500/40' : ''
+      className={`group rounded-3xl border bg-white/95 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900/95 ${
+        highlight
+          ? 'ring-2 ring-purple-300 border-purple-200 dark:ring-purple-500/50 dark:border-purple-500/30'
+          : 'border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700'
       }`}
     >
-      <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 items-center gap-3">
-          <div>
-            <p className="text-lg font-semibold flex flex-wrap items-center gap-5">
-              {recommendation.locationName}
+      <div className="flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between bg-gradient-to-r from-gray-50/50 to-blue-50/30 rounded-t-3xl dark:from-gray-800/50 dark:to-blue-900/10">
+        <div className="flex flex-1 items-center gap-4">
+          <div className="rounded-full bg-blue-100 p-2.5 dark:bg-blue-900/30 shadow-sm">
+            <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                {recommendation.locationName}
+              </p>
               {isWinner && <WinnerBadge isWinner voteCount={voteData.voteCount} />}
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {recommendation.locationType} · Suitability ⭐ {recommendation.suitabilityScore}/10
+            </div>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium dark:bg-gray-800">
+                {recommendation.locationType}
+              </span>
+              <span className="flex items-center gap-1">
+                Suitability <span className="font-semibold text-yellow-600 dark:text-yellow-400">⭐ {recommendation.suitabilityScore}/10</span>
+              </span>
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            {voteData.voteCount} votes
-          </span>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 ring-1 ring-blue-200/50 dark:from-blue-900/20 dark:to-indigo-900/20 dark:ring-blue-700/30">
+            <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+              {voteData.voteCount} {voteData.voteCount === 1 ? 'vote' : 'votes'}
+            </span>
+          </div>
           {shouldShowVotingButton && userNickname && eventId && onVoteChange && (
             <VotingButton
               recommendationId={recommendation.id}
@@ -739,21 +826,30 @@ function RecommendationCard({
           )}
         </div>
       </div>
-      <div className="border-t border-gray-100 px-4 py-4 text-sm dark:border-gray-800">
-        <p className="text-gray-700 dark:text-gray-200">💬 {recommendation.description}</p>
+      <div className="border-t border-gray-100 px-5 py-5 text-sm space-y-4 dark:border-gray-800">
+        <div className="rounded-2xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-4 text-gray-800 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-gray-200">
+          <p className="flex items-start gap-2 leading-relaxed">
+            <span className="text-lg">💬</span>
+            <span>{recommendation.description}</span>
+          </p>
+        </div>
 
         {recommendation.fairnessAnalysis && (
-          <div className="mt-4 rounded-2xl bg-blue-50/80 p-3 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100">
-            📊 {recommendation.fairnessAnalysis}
+          <div className="rounded-2xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 p-4 text-emerald-900 dark:from-emerald-900/20 dark:to-teal-900/20 dark:text-emerald-100">
+            <p className="flex items-start gap-2 leading-relaxed">
+              <span className="text-lg">📊</span>
+              <span>{recommendation.fairnessAnalysis}</span>
+            </p>
           </div>
         )}
 
         {recommendation.distances && recommendation.distances.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <div className="space-y-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               Distances for each participant
             </p>
-            <div className="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-dashed border-gray-200 dark:divide-gray-800 dark:border-gray-700">
+            <div className="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-gray-200 dark:divide-gray-700 dark:border-gray-700">
               {recommendation.distances.map((distance, idx) => {
                 const participantAddress = distance.participant_address
                 const destinationAddress = distance.recommendation_address || recommendation.locationName
@@ -763,18 +859,18 @@ function RecommendationCard({
                 return (
                   <div
                     key={`${distance.participant}-${idx}`}
-                    className="flex flex-col gap-3 px-3 py-3 text-sm text-gray-700 dark:text-gray-200 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 px-4 py-3.5 text-sm bg-white/50 hover:bg-gray-50/80 transition-colors duration-200 dark:bg-gray-900/30 dark:hover:bg-gray-800/50 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div>
-                      <p className="font-medium">{distance.participant}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{distance.participant}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         From: {participantAddress || 'Address unavailable'}
                       </p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                      <span>
+                      <span className="text-gray-700 dark:text-gray-200 font-medium">
                         {distance.estimate}
-                        {transportInfo && ` (${transportInfo})`}
+                        {transportInfo && <span className="text-gray-500 dark:text-gray-400"> ({transportInfo})</span>}
                       </span>
                       <Button
                         variant="outline"
@@ -785,8 +881,9 @@ function RecommendationCard({
                             openGoogleMapsRoute(participantAddress, destinationAddress)
                           }
                         }}
+                        className="border-blue-200 bg-white/80 hover:bg-blue-50 hover:border-blue-300 shadow-sm transition-all duration-200 dark:border-blue-800 dark:bg-blue-900/20 dark:hover:bg-blue-900/40"
                       >
-                        <MapPin className="mr-2 h-4 w-4" />
+                        <MapPin className="mr-2 h-3.5 w-3.5" />
                         View route
                       </Button>
                     </div>
@@ -798,11 +895,11 @@ function RecommendationCard({
         )}
 
         {recommendation.facilities && recommendation.facilities.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {recommendation.facilities.map((facility, idx) => (
               <span
                 key={idx}
-                className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-gray-100 to-blue-100 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm dark:from-gray-800 dark:to-blue-900/30 dark:text-gray-200"
               >
                 {facility}
               </span>
